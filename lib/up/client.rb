@@ -15,6 +15,10 @@ module Up
       end
     end
 
+    def account(id:)
+      get("/api/v1/accounts/#{id}", paginated: false)
+    end
+
     def accounts(type: nil)
       params = {}
 
@@ -27,13 +31,21 @@ module Up
       get("/api/v1/accounts", params:, paginated: true)
     end
 
-    def transactions(account_id:, limit: nil)
-      get("/api/v1/accounts/#{account_id}/transactions", paginated: true, limit:)
+    def transactions(account_id:, pages: nil, filter: nil)
+      get("/api/v1/accounts/#{account_id}/transactions", paginated: true, halt: (pages || filter) && ->(_, depth) {
+        depth >= pages
+      })
+    end
+
+    def transactions_after(account_id:, timestamp:)
+      get("/api/v1/accounts/#{account_id}/transactions", paginated: true, halt: ->(data, _) {
+        data.any? { |transaction| DateTime.parse(transaction["attributes"]["createdAt"]) < timestamp }
+      })
     end
 
     private
 
-    def get(url, params: {}, headers: {}, paginated: false, limit: nil, depth: 0)
+    def get(url, params: {}, headers: {}, paginated: false, halt: nil, depth: 1)
       response = @conn.get(url, params, headers)
 
       raise "Request failed" unless response.success?
@@ -41,8 +53,8 @@ module Up
       body = response.body
       data = body["data"]
 
-      if paginated && (next_url = body["links"]["next"]) && (limit.nil? || depth < limit)
-        next_chunk = get(next_url, params:, headers:, paginated: true, limit:, depth: depth + 1)
+      if paginated && (next_url = body["links"]["next"]) && !halt&.call(data, depth)
+        next_chunk = get(next_url, params:, headers:, paginated: true, halt:, depth: depth + 1)
 
         data = data.concat(next_chunk)
       end
