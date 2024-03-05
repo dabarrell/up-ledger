@@ -3,7 +3,7 @@ require "money"
 module Up
   module Utils
     class << self
-      def format_currency(value, currency)
+      def format_currency(value, currency = "AUD")
         value = value.to_f.round(2)
 
         string = Money.from_amount(value.abs, currency).format
