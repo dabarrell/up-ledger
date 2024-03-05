@@ -20,7 +20,7 @@ module Up
         timestamp = DateTime.parse(timestamp) if timestamp
 
         accounts = account_id ? [client.account(id: account_id)] : client.accounts
-        transactions = client.transactions_after(account_id:, timestamp:)
+        transactions = client.transactions_since(account_id:, timestamp:)
 
         balances = accounts.to_h { |account| [account["id"], account["attributes"]["balance"]["value"].to_f] }
 

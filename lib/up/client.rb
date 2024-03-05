@@ -31,18 +31,18 @@ module Up
       get("/api/v1/accounts", params:, paginated: true)
     end
 
-    def transactions(account_id:, pages: nil, filter: nil)
-      get("/api/v1/accounts/#{account_id}/transactions", paginated: true, halt: (pages || filter) && ->(_, depth) {
+    def transactions(account_id:, pages: nil)
+      get("/api/v1/accounts/#{account_id}/transactions", paginated: true, halt: pages && ->(_, depth) {
         depth >= pages
       })
     end
 
-    def transactions_after(timestamp:, account_id: nil)
+    def transactions_since(timestamp:, account_id: nil)
       url = account_id ? "/api/v1/accounts/#{account_id}/transactions" : "/api/v1/transactions"
 
-      get(url, paginated: true, halt: ->(data, _) {
-        data.any? { |transaction| DateTime.parse(transaction["attributes"]["createdAt"]) < timestamp }
-      })
+      params = {"filter[since]" => timestamp.iso8601}
+
+      get(url, params:, paginated: true)
     end
 
     private
