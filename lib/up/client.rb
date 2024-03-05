@@ -37,8 +37,10 @@ module Up
       })
     end
 
-    def transactions_after(account_id:, timestamp:)
-      get("/api/v1/accounts/#{account_id}/transactions", paginated: true, halt: ->(data, _) {
+    def transactions_after(timestamp:, account_id: nil)
+      url = account_id ? "/api/v1/accounts/#{account_id}/transactions" : "/api/v1/transactions"
+
+      get(url, paginated: true, halt: ->(data, _) {
         data.any? { |transaction| DateTime.parse(transaction["attributes"]["createdAt"]) < timestamp }
       })
     end
