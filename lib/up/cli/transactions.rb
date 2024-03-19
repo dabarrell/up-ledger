@@ -22,7 +22,7 @@ module Up
         results = client.transactions(account_id:, pages: pages&.to_i)
         account = client.account(id: account_id)
 
-        table = Terminal::Table.new(headings: ["ID", "Description", "Amount", "Balance", "Currency", "Status", "Timestamp"])
+        table = Terminal::Table.new(headings: ["ID", "Description", "Message", "Amount", "Balance", "Currency", "Status", "Timestamp"])
 
         balance = account["attributes"]["balance"]["value"].to_f
         results.each do |transaction|
@@ -32,6 +32,7 @@ module Up
           table << [
             transaction["id"],
             transaction["attributes"]["description"],
+            transaction["attributes"]["message"],
             value,
             balance_value,
             transaction["attributes"]["amount"]["currencyCode"],

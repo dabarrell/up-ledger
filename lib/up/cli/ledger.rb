@@ -64,7 +64,7 @@ module Up
       end
 
       def print_transactions(transactions, account)
-        table = Terminal::Table.new(headings: ["ID", "Description", "Amount", "Balance", "Currency", "Status", "Timestamp"])
+        table = Terminal::Table.new(headings: ["ID", "Description", "Message", "Amount", "Balance", "Currency", "Status", "Timestamp"])
 
         balance = account["attributes"]["balance"]["value"].to_f
         transactions.each do |transaction|
@@ -74,6 +74,7 @@ module Up
           table << [
             transaction["id"],
             transaction["attributes"]["description"],
+            transaction["attributes"]["message"],
             value,
             balance_value,
             transaction["attributes"]["amount"]["currencyCode"],
